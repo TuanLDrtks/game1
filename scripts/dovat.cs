@@ -18,7 +18,7 @@ public class Dovat : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
 
-        if (collision.CompareTag("PlayerBuillet"))
+        if (collision.CompareTag("PlayerBullet"))
         {
             
 

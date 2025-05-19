@@ -35,11 +35,10 @@ public class Boss2 : Enemy
     }
 
     private void Dieanimaton()
-    {
-        animator.SetTrigger("death");
-        Instantiate(usb, transform.position, Quaternion.identity);
-       
-    }
+{
+    animator.SetTrigger("death");
+    Instantiate(usb, transform.position + Vector3.up * 1f, Quaternion.identity); // rơi ra USB cao hơn Boss chút
+}
 
     private void UseSmartSkill()
     {
@@ -155,4 +154,27 @@ public class Boss2 : Enemy
             }
         }
     }
+    
+protected override void Die()
+{
+    Dieanimaton(); // Gọi animation chết + rơi USB
+    StopAllActions(); // Dừng di chuyển, tấn công...
+    Destroy(gameObject, 2f); // Hủy sau vài giây để animation kịp chạy
+}
+private void StopAllActions()
+{
+    // 1. Ngừng di chuyển (nếu có)
+    if (TryGetComponent<Rigidbody2D>(out var rb))
+    {
+        rb.velocity = Vector2.zero;
+        rb.isKinematic = true; // Ngừng chịu lực
+    }
+
+    // 2. Tắt AI / logic tấn công
+    this.enabled = false; // Tắt script Boss2 (nếu toàn bộ AI trong đây)
+
+    // 3. Tắt các trigger hoặc collider va chạm không cần thiết
+    Collider2D col = GetComponent<Collider2D>();
+    if (col != null) col.enabled = false;
+}
 }

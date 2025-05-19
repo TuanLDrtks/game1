@@ -11,6 +11,8 @@ public class Gun : MonoBehaviour
     [SerializeField] private GameObject bulletPrefabs;
     // Khoảng thời gian giữa các lần bắn (delay giữa các shot).
     [SerializeField] private float shotDelay = 0.15f;
+    public float Damage=10;
+    public float DamageGun=10;
     // Thời điểm cho phép bắn tiếp theo, dùng để so sánh với Time.time.
     private float nextShot;
 
@@ -20,11 +22,13 @@ public class Gun : MonoBehaviour
     public int currentAmmo;
     [SerializeField] private TextMeshProUGUI amoText;
     [SerializeField] private AudioManager audioManager;
+    [SerializeField] private TextMeshProUGUI amoText2;
     void Start()
     {
         // Khi khởi chạy, gán số đạn hiện có bằng số đạn tối đa.
         currentAmmo = maxAmmo;
         UpdateAmoText();
+        UpdateAmoText2();
     }
 
     void Update()
@@ -77,7 +81,9 @@ public class Gun : MonoBehaviour
             // Cập nhật thời điểm cho phép bắn lần tiếp theo.
             nextShot = Time.time + shotDelay;
             // Tạo (Instantiate) một viên đạn mới tại vị trí firePos với hướng quay firePos.
-            Instantiate(bulletPrefabs, firePos.position, firePos.rotation);
+            GameObject bulletObj = Instantiate(bulletPrefabs, firePos.position, firePos.rotation);
+            Bullet bullet = bulletObj.GetComponent<Bullet>();
+            bullet.SetDamage(DamageGun);
             // Giảm số đạn hiện có đi 1.
             currentAmmo--;
             UpdateAmoText();
@@ -111,5 +117,19 @@ public class Gun : MonoBehaviour
             amoText.text="Empty";
         }
       }  
+    }
+    public void UpdateAmoText2()
+    {
+      if(amoText2!=null)
+      {
+        
+            amoText2.text=DamageGun.ToString();
+        
+        
+      }  
+    }
+    public float damegun()
+    {
+        return DamageGun;
     }
 }

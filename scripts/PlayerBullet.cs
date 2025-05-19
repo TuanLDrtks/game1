@@ -1,18 +1,26 @@
 using UnityEngine;
-
+using TMPro;
 public class Bullet : MonoBehaviour
 {
     // Biến này cho phép bạn tùy chỉnh tốc độ di chuyển của đạn trong Inspector.
-    [SerializeField] private float moveSpeed = 25f;
+    [SerializeField] private float moveSpeed = 100f;
     
     // Biến này cho biết sau bao nhiêu giây thì đạn sẽ tự hủy.
     [SerializeField] private float timeDestroy = 0.5f;
-    [SerializeField] public static float damage=10f;
+    [SerializeField] private TextMeshProUGUI amoText;
+    private float damage;
+
+    public void SetDamage(float value)
+    {
+        damage = value;
+    }
+
     [SerializeField] GameObject bloodFrefabs;
+
     private void Start()
     {
-        // Destroy(gameObject, timeDestroy) sẽ tự động hủy đối tượng (gameObject) 
-        // sau 'timeDestroy' giây kể từ khi bắt đầu (Start).
+         
+        
         Destroy(gameObject, timeDestroy);
     }
 
@@ -36,6 +44,7 @@ public class Bullet : MonoBehaviour
                 enemy.TakeDamage(damage); // Gây sát thương cho enemy
                 GameObject blood= Instantiate(bloodFrefabs,transform.position, Quaternion.identity);
                 Destroy(blood,1f);
+                //amoText.text=damage.ToString();
             }
 
             Destroy(gameObject); // Hủy đạn ngay sau khi va chạm

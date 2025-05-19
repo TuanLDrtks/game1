@@ -2,6 +2,7 @@ using UnityEngine;
 // Lớp BasicEnemy kế thừa từ Enemy, đại diện cho một loại quái đơn giản.
 public class Boss: Enemy
 {
+    private static Boss instance;
     [SerializeField] private GameObject bulletboss;
     [SerializeField] private Transform firePoint;
     [SerializeField] private float tocdodan= 5f;
@@ -11,6 +12,18 @@ public class Boss: Enemy
     [SerializeField] private float skillcooldown=2f;
     [SerializeField] private GameObject usb;
     private float nextskill=0f;
+    private void Awake()
+{
+    if (instance == null)
+    {
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+    else
+    {
+        Destroy(gameObject); // Nếu đã có boss rồi thì hủy bản mới
+    }
+}
     protected override void Update()
     {
         base.Update();

@@ -1,18 +1,25 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 public class Player : MonoBehaviour
 {
-     // Quản lý hình ảnh nhân vật
-    // Hình ảnh nhân vật mới
     [SerializeField] private float moveSpeed = 5f;
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private Animator animator;
-    [SerializeField] protected float maxHp = 100f; // Máu tối đa của enemy
+    [SerializeField] protected float maxHp = 100f; 
     protected float currentHp;
     [SerializeField] private Image hpBar;
     [SerializeField] private GameManager gameManager;
+    [SerializeField] private TextMeshProUGUI amoText;
+
+public void IncreaseMaxHP(float extraHP)
+{
+    maxHp += extraHP;
+    currentHp += extraHP;
+    UpdateHpBar();
+}
     
     private void Awake()
     {
@@ -28,9 +35,9 @@ public class Player : MonoBehaviour
     }
     void Start()
     {
-        // Đổi hình ảnh nhân vật ngay khi game bắt đầu
         currentHp=maxHp;
         UpdateHpBar();
+        UpdateAmoText();
     }
 
     private void Update()
@@ -38,9 +45,28 @@ public class Player : MonoBehaviour
         MovePlayer();
         if(Input.GetKeyDown(KeyCode.Escape))
         {
-            gameManager.PauseGameMenu();
             
+            if (gameManager.IsUIActive(gameManager.pauseMenu))
+            {
+                gameManager.ResumeGame(); 
+            }
+            else
+            {
+                gameManager.PauseGameMenu(); 
+            }
         }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            if (gameManager.IsUIActive(gameManager.Htrang))
+            {
+                gameManager.ResumeGame(); // tắt hành trang
+            }
+            else
+            {
+                gameManager.HanhTrang(); // bật hành trang
+            }
+        }
+        
     }
 
     private void MovePlayer()
@@ -76,7 +102,7 @@ public class Player : MonoBehaviour
 
         // Cập nhật thanh máu để phản ánh sự thay đổi HP
         UpdateHpBar();
-
+        UpdateAmoText();
         // Nếu máu giảm xuống 0 hoặc thấp hơn, enemy sẽ chết
         if (currentHp <= 0)
         {
@@ -90,7 +116,7 @@ public class Player : MonoBehaviour
          // Xóa enemy khỏi Scene
          //Destroy(gameObject);  
     }
-     protected void UpdateHpBar()
+     public void UpdateHpBar()
     {
         if (hpBar != null)
         {
@@ -98,7 +124,7 @@ public class Player : MonoBehaviour
             hpBar.fillAmount = currentHp / maxHp;
         }
     }
-    public void heal(float hpvalue)
+    public void Heal(float hpvalue)
     {
         if(currentHp<maxHp)
         {
@@ -121,6 +147,27 @@ public class Player : MonoBehaviour
     {
         // Tự động gán lại GameManager khi sang map mới
         gameManager = FindObjectOfType<GameManager>();
+    }
+     public void UpdateAmoText()
+    {
+      if(amoText!=null)
+      {
+        if(currentHp>=0)
+        {
+            amoText.text=currentHp.ToString();
+        }
+        else
+        {
+            amoText.text="DIE";
+        }
+      }  
+    }
+    public void ResetPlayer()
+    {
+         maxHp=200f;
+        currentHp=maxHp;
+        UpdateHpBar();
+        UpdateAmoText();
     }
 
 }

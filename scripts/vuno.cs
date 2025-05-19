@@ -1,7 +1,7 @@
 
 using UnityEngine;
 
-public class vuno : MonoBehaviour
+public class Vuno : MonoBehaviour
 {
     [SerializeField] private float damage = 50f;
     private void OnTriggerEnter2D(Collider2D collision) 

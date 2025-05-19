@@ -34,7 +34,7 @@ public class HPEnemy : Enemy
     {
         if(player!=null)
         {
-            player.heal(hpvalue);
+            player.Heal(hpvalue);
         }
     }
 }

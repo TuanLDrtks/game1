@@ -4,161 +4,237 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager instance; 
+
+    
     private int currentEnergy;
-    [SerializeField] private int energyThreshold=10;
+    [SerializeField] private int energyThreshold = 4;
     [SerializeField] private GameObject boss;
     [SerializeField] private GameObject player;
-    [SerializeField] private GameObject enemyspaner;
-    private bool bossCalled=false;
+    [SerializeField] private GameObject enemySpawner;
+    private bool bossCalled = false;
     [SerializeField] private Image energyBar;
     [SerializeField] private Image KN;
-    [SerializeField] GameObject ThanhBOSS;
-    [SerializeField] GameObject gameui;
-    [SerializeField] private GameObject mainMenu;
+    [SerializeField] private GameObject ThanhBOSS;
+    [SerializeField] private GameObject gameUI;
+    [SerializeField] public GameObject mainMenu;
     [SerializeField] private GameObject gameOverMenu;
-    [SerializeField] private GameObject pauseMenu;
-    [SerializeField] private GameObject item;
-     [SerializeField] private AudioManager audioManager;
-
+    [SerializeField] public GameObject pauseMenu;
+    [SerializeField] public GameObject item;
+    [SerializeField] public GameObject Htrang;
+    [SerializeField] private AudioManager audioManager;
     [SerializeField] private GameObject winMenu;
+    [SerializeField] private GameObject huongDanPanel;
+    private Player playerScript;
+    
 
     void Awake()
     {
-        if (FindObjectsOfType<GameManager>().Length > 1)
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
         {
             Destroy(gameObject);
             return;
         }
-        DontDestroyOnLoad(gameObject);
     }
-      
+     
 
-   
-    
     void Start()
     {
-        currentEnergy=0;
+        
+        
+        currentEnergy = 0;
         UpdateEnergy();
         UpdateKN();
-       boss.SetActive(false); 
-       MainMenu();
-       audioManager.StopAudioGame();
-    
+        boss.SetActive(false);
+        MainMenu();
+        audioManager.StopAudioGame();
     }
-
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
         
     }
+       
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Tìm lại các object trong scene mới
+        boss = GameObject.FindWithTag("Enemy");
+        enemySpawner = GameObject.FindWithTag("EnemySpawner");
+        
+
+        player = GameObject.FindWithTag("Player");
+        if (player != null)
+            playerScript = player.GetComponent<Player>();
+         // Reset trạng thái boss
+    bossCalled = false;
+
+    if ( scene.name == "Map1"&&boss != null)
+    {
+        boss.SetActive(false); // Ẩn boss khi mới load
+    }
+
+    if (enemySpawner != null)
+    {
+        enemySpawner.SetActive(true);
+    }
+
+    if (ThanhBOSS != null)
+    {
+        ThanhBOSS.SetActive(true);
+    }
+
+    // Reset năng lượng
+    currentEnergy = 0;
+    UpdateEnergy();
+    UpdateKN();
+       
+    }
+    public bool IsUIActive(GameObject ui)
+    {
+        return ui != null && ui.activeSelf;
+    }
+
     public void AddEnergy()
     {
-
-         currentEnergy+=1;  
-         UpdateEnergy();
-         UpdateKN();
-         if(currentEnergy==energyThreshold)
-         {
-            CallBoss();
-         }
-         if(currentEnergy==4)
-         {
-            Item();
-            currentEnergy=0;
-         } 
-    }
-    private void CallBoss()
-    {
-        bossCalled=true;
-        boss.SetActive(true);
-        enemyspaner.SetActive(false);
-        
-        ThanhBOSS.SetActive(false);
-        audioManager.PlayBossAudio();
-    }
-    private void UpdateKN()
-    {
-        if(KN!=null)
-        {
-            float fillAmount=Mathf.Clamp01((float)currentEnergy/(float)4);
-        KN.fillAmount=fillAmount;
-        }
-    }
-    private void UpdateEnergy()
-    {
-        if(energyBar!=null)
-        {
-            float fillAmount=Mathf.Clamp01((float)currentEnergy/(float)energyThreshold);
-        energyBar.fillAmount=fillAmount;
-        }
-    }
-    public void MainMenu(){
-        mainMenu.SetActive(true);
-        gameOverMenu.SetActive(false);
-        pauseMenu.SetActive(false);
-        winMenu.SetActive(false);
-        item.SetActive(false);
-        Time.timeScale=0f;
-        audioManager.StopAudioGame();
-  
-    }
-    public void GameOverMenu(){
-        gameOverMenu.SetActive(true);
-        mainMenu.SetActive(false);
-        pauseMenu.SetActive(false);
-        winMenu.SetActive(false);
-        Time.timeScale=0f;
-        item.SetActive(false);
-    }
-    public void PauseGameMenu(){
-        pauseMenu.SetActive(true);
-        gameOverMenu.SetActive(false);
-        mainMenu.SetActive(false);
-        winMenu.SetActive(false);
-        Time.timeScale=0f;
-        item.SetActive(false);
-    }
-    public void StartGame()
-    {
-        mainMenu.SetActive(false);
-        gameOverMenu.SetActive(false);
-        pauseMenu.SetActive(false);
-        winMenu.SetActive(false);
-        item.SetActive(false);
-        Time.timeScale = 1f;
-           // 🔁 RESET trạng thái
-        currentEnergy = 0;
-        bossCalled = false;
+        currentEnergy++;
         UpdateEnergy();
         UpdateKN();
-        
-        // Ẩn boss và bật lại enemy spawner nếu cần
-        boss.SetActive(false);
-        ThanhBOSS.SetActive(true);
-        enemyspaner.SetActive(true);
-        audioManager.PlayDefaultAudio();
+
+        if (currentEnergy >= energyThreshold)
+        {
+            CallBoss();
+        }
+        if (currentEnergy == 4 ) // Mỗi lần đạt bội số của 4 thì hiện Item
+        {
+            Item();
+            currentEnergy = 0;
+        }
     }
+
+    private void CallBoss()
+    {
+        // Đảm bảo boss không bị gọi nhiều lần
+        if(bossCalled)return ;
+        bossCalled = true;
+        if (boss != null) boss.SetActive(true);
+    if (enemySpawner != null) enemySpawner.SetActive(false);
+    if (ThanhBOSS != null) ThanhBOSS.SetActive(false);
+    if (audioManager != null) audioManager.PlayBossAudio();
+    }
+
+    private void UpdateKN()
+    {
+        if (KN != null)
+        {
+            KN.fillAmount = Mathf.Clamp01((float)currentEnergy / 4);
+        }
+    }
+
+    private void UpdateEnergy()
+    {
+        if (energyBar != null)
+        {
+            energyBar.fillAmount = Mathf.Clamp01((float)currentEnergy / energyThreshold);
+        }
+    }
+
+    public void MainMenu()
+    {
+        ShowOnly(mainMenu);
+        Time.timeScale = 0f;
+        audioManager.StopAudioGame();
+    }
+
+    public void GameOverMenu()
+    {
+        ShowOnly(gameOverMenu);
+        Time.timeScale = 0f;
+    }
+
+    public void PauseGameMenu()
+    {
+        ShowOnly(pauseMenu);
+        Time.timeScale = 0f;
+    }
+
+    public void StartGame()
+{
+    ShowOnly(null);
+    Time.timeScale = 1f;
+
+    currentEnergy = 0;
+    bossCalled = false;
+    UpdateEnergy();
+    UpdateKN();
+
+    if (playerScript != null)
+    {
+        playerScript.ResetPlayer();
+    }
+
+    if (boss != null) boss.SetActive(false);
+    if (enemySpawner != null) enemySpawner.SetActive(true);
+    if (ThanhBOSS != null) ThanhBOSS.SetActive(true);
+    
+    if (audioManager != null) audioManager.PlayDefaultAudio();
+}
+
+   
+      
+
     public void ResumeGame()
     {
-        mainMenu.SetActive(false);
-        gameOverMenu.SetActive(false);
-        pauseMenu.SetActive(false);
-        winMenu.SetActive(false);
-        item.SetActive(false);
-        Time.timeScale=1f;
+        ShowOnly(null);
+        Time.timeScale = 1f;
     }
+
     public void WinGame()
     {
-        mainMenu.SetActive(false);
-        gameOverMenu.SetActive(false);
-        pauseMenu.SetActive(false);
-        winMenu.SetActive(true);
-        item.SetActive(false);
-        Time.timeScale=0f;
+        ShowOnly(winMenu);
+        Time.timeScale = 0f;
     }
-     public void Item()
+
+    public void Item()
     {
-        item.SetActive(true);
-        Time.timeScale=0f; 
+        ShowOnly(item);
+        Time.timeScale = 0f;
     }
+
+    public void HanhTrang()
+    {
+        ShowOnly(Htrang);
+        Time.timeScale = 0f;
+      
+    }
+    public void HuongDan()
+{
+    ShowOnly(huongDanPanel);
+    Time.timeScale = 0f;
 }
+
+
+    // ✅ Hàm dùng để chỉ hiển thị một menu duy nhất
+   private void ShowOnly(GameObject menuToShow)
+{
+    mainMenu.SetActive(menuToShow == mainMenu);
+    gameOverMenu.SetActive(menuToShow == gameOverMenu);
+    pauseMenu.SetActive(menuToShow == pauseMenu);
+    winMenu.SetActive(menuToShow == winMenu);
+    item.SetActive(menuToShow == item);
+    Htrang.SetActive(menuToShow == Htrang);
+    huongDanPanel.SetActive(menuToShow == huongDanPanel);
+}
+} 
